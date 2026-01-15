@@ -1,0 +1,56 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+dist/
+
+# Build output
+build/
+
+# Library files (keep README.md)
+lib/**/*.dll
+lib/**/*.lib
+lib/**/*.so
+lib/**/*.a
+lib/**/*.dylib
+!lib/**/README.md
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of go coverage tool
+*.out
+coverage.html
+
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+
+# IDE
+.idea/
+.vscode/
+.trae
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Config
+config.local.yaml
+.env
+*.db
+
+# Logs
+logs/
+*.log
+
+# Docker
+.dockerignore

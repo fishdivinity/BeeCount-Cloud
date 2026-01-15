@@ -1,0 +1,81 @@
+cors:
+    allow_credentials: true
+    allowed_headers:
+        - '*'
+    allowed_methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+    allowed_origins:
+        - '*'
+    exposed_headers:
+        - Content-Length
+    max_age: 12h
+database:
+    mysql:
+        charset: utf8mb4
+        database: beecount
+        host: localhost
+        loc: Local
+        parse_time: true
+        password: password
+        port: 3306
+        username: root
+    postgres:
+        database: beecount
+        host: localhost
+        password: password
+        port: 5432
+        sslmode: disable
+        timezone: UTC
+        username: postgres
+    sqlite:
+        path: ./data/beecount.db
+    type: sqlite
+jwt:
+    expire_hours: 24
+    last_rotation_date: "2026-01-15T18:37:25+08:00"
+    previous_secret: ""
+    rotation_interval_days: 7
+    secret: your-secret-key-change-in-production
+log:
+    file:
+        compress: true
+        max_age: 28
+        max_backups: 3
+        max_size: 100
+        max_total_size_gb: 10
+        path: ./logs/app.log
+    format: json
+    level: info
+    output: stdout
+server:
+    admin_account:
+        password: beecount_admin_2024
+        username: beecount
+    allow_registration: false
+    mode: debug
+    port: 8080
+    read_timeout: 60s
+    docs:
+        enabled: true
+    write_timeout: 60s
+storage:
+    allowed_file_types:
+        - image/jpeg
+        - image/png
+        - image/gif
+        - image/webp
+    local:
+        path: ./data/uploads
+        url_prefix: /uploads
+    max_file_size: 10485760
+    s3:
+        access_key_id: your-access-key
+        bucket: beecount-uploads
+        endpoint: https://s3.amazonaws.com
+        region: us-east-1
+        secret_access_key: your-secret-key
+    type: local

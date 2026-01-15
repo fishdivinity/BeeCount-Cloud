@@ -1,0 +1,38 @@
+services:
+  beecount-cloud:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: beecount-cloud
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+      - ./config.yaml:/app/config.yaml:ro
+    environment:
+      - GIN_MODE=release
+      - CGO_ENABLED=1
+      - SERVER_DOCS_ENABLED=false # 生产环境默认关闭API文档
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - beecount-network
+
+networks:
+  beecount-network:
+    driver: bridge
+
+volumes:
+  data:
+    driver: local
+  logs:
+    driver: local
+  uploads:
+    driver: local

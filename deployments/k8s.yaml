@@ -1,0 +1,162 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: beecount-cloud
+  labels:
+    app: beecount-cloud
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: beecount-cloud
+  template:
+    metadata:
+      labels:
+        app: beecount-cloud
+    spec:
+      containers:
+      - name: beecount-cloud
+        image: beecount/beecount-cloud:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: GIN_MODE
+          value: "release"
+        - name: CGO_ENABLED
+          value: "1"
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+        - name: logs
+          mountPath: /app/logs
+        - name: uploads
+          mountPath: /app/uploads
+        - name: config
+          mountPath: /app/config.yaml
+          subPath: config.yaml
+          readOnly: true
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: beecount-data
+      - name: logs
+        persistentVolumeClaim:
+          claimName: beecount-logs
+      - name: uploads
+        persistentVolumeClaim:
+          claimName: beecount-uploads
+      - name: config
+        configMap:
+          name: beecount-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: beecount-cloud
+  labels:
+    app: beecount-cloud
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: beecount-cloud
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: beecount-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: beecount-logs
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: beecount-uploads
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: beecount-config
+data:
+  config.yaml: |
+    server:
+      port: 8080
+      mode: release
+      read_timeout: 60s
+      write_timeout: 60s
+
+    database:
+      type: sqlite
+      sqlite:
+        path: /app/data/beecount.db
+
+    jwt:
+      secret: your-secret-key-change-in-production
+      expire_hours: 24
+
+    storage:
+      type: local
+      local:
+        path: /app/uploads
+        url_prefix: /uploads
+
+    log:
+      level: info
+      format: json
+      output: stdout
+
+    cors:
+      allowed_origins:
+        - "*"
+      allowed_methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      allowed_headers:
+        - "*"
+      allow_credentials: true
+      max_age: 12h

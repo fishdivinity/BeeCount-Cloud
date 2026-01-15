@@ -1,0 +1,1120 @@
+basePath: /api/v1
+definitions:
+  internal_api.AccountResponse:
+    properties:
+      created_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      currency:
+        example: CNY
+        type: string
+      id:
+        example: 1
+        type: integer
+      initial_balance:
+        example: 1000
+        type: number
+      name:
+        example: Cash
+        type: string
+      type:
+        example: cash
+        type: string
+      updated_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      user_id:
+        example: 1
+        type: integer
+    type: object
+  internal_api.AttachmentResponse:
+    properties:
+      created_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      file_name:
+        example: attachments/1/1_photo.jpg
+        type: string
+      file_size:
+        example: 102400
+        type: integer
+      height:
+        example: 1080
+        type: integer
+      id:
+        example: 1
+        type: integer
+      original_name:
+        example: photo.jpg
+        type: string
+      sort_order:
+        example: 0
+        type: integer
+      transaction_id:
+        example: 1
+        type: integer
+      updated_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      width:
+        example: 1920
+        type: integer
+    type: object
+  internal_api.AuthResponse:
+    properties:
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      user:
+        $ref: '#/definitions/internal_api.UserResponse'
+    type: object
+  internal_api.CategoryResponse:
+    properties:
+      community_icon_id:
+        example: community_123
+        type: string
+      created_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      custom_icon_path:
+        example: /custom/icons/food.svg
+        type: string
+      icon:
+        example: restaurant
+        type: string
+      icon_type:
+        example: material
+        type: string
+      id:
+        example: 1
+        type: integer
+      kind:
+        example: expense
+        type: string
+      level:
+        example: 2
+        type: integer
+      name:
+        example: Food
+        type: string
+      parent_id:
+        example: 1
+        type: integer
+      sort_order:
+        example: 0
+        type: integer
+      updated_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      user_id:
+        example: 1
+        type: integer
+    type: object
+  internal_api.CreateLedgerRequest:
+    properties:
+      currency:
+        example: CNY
+        type: string
+      name:
+        example: My Ledger
+        maxLength: 100
+        type: string
+      type:
+        enum:
+        - personal
+        - shared
+        example: personal
+        type: string
+    required:
+    - name
+    type: object
+  internal_api.CreateTransactionRequest:
+    properties:
+      account_id:
+        example: 1
+        type: integer
+      amount:
+        example: 100.5
+        type: number
+      category_id:
+        example: 1
+        type: integer
+      happened_at:
+        example: "2024-01-01T12:00:00Z"
+        type: string
+      ledger_id:
+        example: 1
+        type: integer
+      note:
+        example: Lunch
+        type: string
+      to_account_id:
+        example: 2
+        type: integer
+      type:
+        enum:
+        - expense
+        - income
+        - transfer
+        example: expense
+        type: string
+    required:
+    - amount
+    - happened_at
+    - ledger_id
+    - type
+    type: object
+  internal_api.ErrorResponse:
+    properties:
+      code:
+        example: 400
+        type: integer
+      error:
+        example: bad request
+        type: string
+      message:
+        example: Invalid input
+        type: string
+    type: object
+  internal_api.LedgerResponse:
+    properties:
+      created_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      currency:
+        example: CNY
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: My Ledger
+        type: string
+      type:
+        example: personal
+        type: string
+      updated_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      user_id:
+        example: 1
+        type: integer
+    type: object
+  internal_api.LoginRequest:
+    properties:
+      email:
+        example: john@example.com
+        type: string
+      password:
+        example: password123
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  internal_api.RegisterRequest:
+    properties:
+      email:
+        example: john@example.com
+        type: string
+      password:
+        example: password123
+        minLength: 6
+        type: string
+      username:
+        example: johndoe
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  internal_api.TagResponse:
+    properties:
+      color:
+        example: '#FF5722'
+        type: string
+      created_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: Business
+        type: string
+      sort_order:
+        example: 0
+        type: integer
+      updated_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      user_id:
+        example: 1
+        type: integer
+    type: object
+  internal_api.TransactionResponse:
+    properties:
+      account:
+        $ref: '#/definitions/internal_api.AccountResponse'
+      account_id:
+        example: 1
+        type: integer
+      amount:
+        example: 100.5
+        type: number
+      attachments:
+        items:
+          $ref: '#/definitions/internal_api.AttachmentResponse'
+        type: array
+      category:
+        $ref: '#/definitions/internal_api.CategoryResponse'
+      category_id:
+        example: 1
+        type: integer
+      created_at:
+        example: "2024-01-01T12:00:00Z"
+        type: string
+      happened_at:
+        example: "2024-01-01T12:00:00Z"
+        type: string
+      id:
+        example: 1
+        type: integer
+      ledger_id:
+        example: 1
+        type: integer
+      note:
+        example: Lunch
+        type: string
+      recurring_id:
+        type: integer
+      tags:
+        items:
+          $ref: '#/definitions/internal_api.TagResponse'
+        type: array
+      to_account:
+        $ref: '#/definitions/internal_api.AccountResponse'
+      to_account_id:
+        example: 2
+        type: integer
+      type:
+        example: expense
+        type: string
+      updated_at:
+        example: "2024-01-01T12:00:00Z"
+        type: string
+      user_id:
+        example: 1
+        type: integer
+    type: object
+  internal_api.UpdateLedgerRequest:
+    properties:
+      currency:
+        example: USD
+        type: string
+      name:
+        example: Updated Ledger
+        maxLength: 100
+        type: string
+      type:
+        enum:
+        - personal
+        - shared
+        example: shared
+        type: string
+    type: object
+  internal_api.UpdateTransactionRequest:
+    properties:
+      account_id:
+        example: 1
+        type: integer
+      amount:
+        example: 200
+        type: number
+      category_id:
+        example: 2
+        type: integer
+      happened_at:
+        example: "2024-01-02T12:00:00Z"
+        type: string
+      note:
+        example: Updated note
+        type: string
+      to_account_id:
+        example: 2
+        type: integer
+      type:
+        enum:
+        - expense
+        - income
+        - transfer
+        example: income
+        type: string
+    type: object
+  internal_api.UserResponse:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      created_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      display_name:
+        example: John Doe
+        type: string
+      email:
+        example: john@example.com
+        type: string
+      id:
+        example: 1
+        type: integer
+      updated_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      username:
+        example: johndoe
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: BeeCount Cloud API 是一个用于管理个人财务账本的云服务 API，提供账本、交易、分类、标签等功能。
+  license:
+    name: AGPL 3.0
+    url: https://www.gnu.org/licenses/agpl-3.0.en.html
+  termsOfService: http://swagger.io/terms/
+  title: BeeCount Cloud API
+  version: "1.0"
+paths:
+  /api/v1/attachments/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 从存储后端删除文件，并删除数据库中的附件记录
+      parameters:
+      - description: 附件ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: 删除成功
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "404":
+          description: 附件不存在
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: 删除附件
+      tags:
+      - 附件
+    get:
+      consumes:
+      - application/json
+      description: 根据附件ID下载文件并返回给客户端
+      parameters:
+      - description: 附件ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: 文件内容
+          schema:
+            type: file
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "404":
+          description: 附件不存在
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: 获取附件
+      tags:
+      - 附件
+  /api/v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: 验证用户凭证，返回JWT token和用户信息
+      parameters:
+      - description: 登录信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 登录成功
+          schema:
+            $ref: '#/definitions/internal_api.AuthResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "401":
+          description: 认证失败
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      summary: 用户登录
+      tags:
+      - 认证
+  /api/v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: 创建新用户账户
+      parameters:
+      - description: 注册信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 注册成功
+          schema:
+            $ref: '#/definitions/internal_api.UserResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "403":
+          description: 注册已禁用
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      summary: 用户注册
+      tags:
+      - 认证
+  /api/v1/ledgers:
+    get:
+      consumes:
+      - application/json
+      description: 返回当前用户拥有的所有账本列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            items:
+              $ref: '#/definitions/internal_api.LedgerResponse'
+            type: array
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: 获取账本列表
+      tags:
+      - 账本
+    post:
+      consumes:
+      - application/json
+      description: 为当前用户创建新的账本
+      parameters:
+      - description: 账本信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api.CreateLedgerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 创建成功
+          schema:
+            $ref: '#/definitions/internal_api.LedgerResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: 创建账本
+      tags:
+      - 账本
+  /api/v1/ledgers/{ledger_id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定账本，只有账本所有者可以删除
+      parameters:
+      - description: 账本ID
+        in: path
+        name: ledger_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: 删除成功
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "404":
+          description: 账本不存在
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: 删除账本
+      tags:
+      - 账本
+    get:
+      consumes:
+      - application/json
+      description: 根据账本ID返回账本详细信息
+      parameters:
+      - description: 账本ID
+        in: path
+        name: ledger_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            $ref: '#/definitions/internal_api.LedgerResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "404":
+          description: 账本不存在
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: 获取账本详情
+      tags:
+      - 账本
+    put:
+      consumes:
+      - application/json
+      description: 更新指定账本的信息，只有账本所有者可以更新
+      parameters:
+      - description: 账本ID
+        in: path
+        name: ledger_id
+        required: true
+        type: integer
+      - description: 更新信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api.UpdateLedgerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            $ref: '#/definitions/internal_api.LedgerResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "404":
+          description: 账本不存在
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: 更新账本
+      tags:
+      - 账本
+  /api/v1/ledgers/{ledger_id}/sync/download:
+    get:
+      consumes:
+      - application/json
+      description: 返回账本数据的JSON格式，用于客户端同步
+      parameters:
+      - description: 账本ID
+        in: path
+        name: ledger_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 下载成功，返回JSON数据
+          schema:
+            type: string
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "404":
+          description: 账本不存在
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: 下载账本数据
+      tags:
+      - 同步
+  /api/v1/ledgers/{ledger_id}/sync/status:
+    get:
+      consumes:
+      - application/json
+      description: 返回账本的同步状态信息，包括交易数量、最后更新时间等
+      parameters:
+      - description: 账本ID
+        in: path
+        name: ledger_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "404":
+          description: 账本不存在
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: 获取同步状态
+      tags:
+      - 同步
+  /api/v1/ledgers/{ledger_id}/sync/upload:
+    post:
+      consumes:
+      - application/json
+      description: 将账本数据导出为JSON格式，用于客户端同步
+      parameters:
+      - description: 账本ID
+        in: path
+        name: ledger_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 上传成功，返回JSON数据
+          schema:
+            type: string
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: 上传账本数据
+      tags:
+      - 同步
+  /api/v1/ledgers/{ledger_id}/transactions:
+    get:
+      consumes:
+      - application/json
+      description: 返回指定账本中的交易列表，支持分页
+      parameters:
+      - description: 账本ID
+        in: path
+        name: ledger_id
+        required: true
+        type: integer
+      - default: 20
+        description: 每页数量
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            items:
+              $ref: '#/definitions/internal_api.TransactionResponse'
+            type: array
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: 获取交易列表
+      tags:
+      - 交易
+    post:
+      consumes:
+      - application/json
+      description: 为指定账本创建新的交易记录
+      parameters:
+      - description: 账本ID
+        in: path
+        name: ledger_id
+        required: true
+        type: integer
+      - description: 交易信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api.CreateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 创建成功
+          schema:
+            $ref: '#/definitions/internal_api.TransactionResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: 创建交易
+      tags:
+      - 交易
+  /api/v1/ledgers/{ledger_id}/transactions/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定交易，只有交易所有者可以删除
+      parameters:
+      - description: 交易ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: 删除成功
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "404":
+          description: 交易不存在
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: 删除交易
+      tags:
+      - 交易
+    get:
+      consumes:
+      - application/json
+      description: 根据交易ID返回交易详细信息
+      parameters:
+      - description: 交易ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            $ref: '#/definitions/internal_api.TransactionResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "404":
+          description: 交易不存在
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: 获取交易详情
+      tags:
+      - 交易
+    put:
+      consumes:
+      - application/json
+      description: 更新指定交易的信息，只有交易所有者可以更新
+      parameters:
+      - description: 交易ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api.UpdateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            $ref: '#/definitions/internal_api.TransactionResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "404":
+          description: 交易不存在
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: 更新交易
+      tags:
+      - 交易
+  /api/v1/ledgers/{ledger_id}/transactions/{transaction_id}/attachments:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 上传交易附件，支持图片格式（JPEG、PNG、GIF、WebP），最大10MB
+      parameters:
+      - description: 账本ID
+        in: path
+        name: ledger_id
+        required: true
+        type: integer
+      - description: 交易ID
+        in: path
+        name: transaction_id
+        required: true
+        type: integer
+      - description: 附件文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 上传成功
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: 上传附件
+      tags:
+      - 附件
+  /api/v1/users/me:
+    get:
+      consumes:
+      - application/json
+      description: 根据JWT token返回当前登录用户的详细信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            $ref: '#/definitions/internal_api.UserResponse'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+        "404":
+          description: 用户不存在
+          schema:
+            $ref: '#/definitions/internal_api.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: 获取当前用户信息
+      tags:
+      - 认证
+securityDefinitions:
+  Bearer:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
