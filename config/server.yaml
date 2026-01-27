@@ -8,3 +8,33 @@ docs:
 admin_account:
   username: beecount
   password: beecount_admin_2026
+
+# Unix域套接字配置
+socket:
+  enabled: true
+  base_path: "/tmp/beecount"
+  windows_base_path: "\\\\.\\pipe\\beecount"
+
+# 服务套接字路径
+services:
+  config:
+    socket: "config"
+    port: 50051
+  auth:
+    socket: "auth"
+    port: 50052
+  business:
+    socket: "business"
+    port: 50053
+  storage:
+    socket: "storage"
+    port: 50054
+  log:
+    socket: "log"
+    port: 50055
+  firewall:
+    socket: "firewall"
+    port: 50056
+  gateway:
+    socket: "gateway"
+    port: 50057

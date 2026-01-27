@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	stdsync "sync"
 	"time"
 
 	"github.com/fishdivinity/BeeCount-Cloud/common/proto/common"
@@ -15,8 +16,6 @@ import (
 	"github.com/fishdivinity/BeeCount-Cloud/services/config/internal/model"
 	"github.com/fishdivinity/BeeCount-Cloud/services/config/internal/sync"
 	"github.com/fishdivinity/BeeCount-Cloud/services/config/internal/watcher"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // ConfigManager 配置管理器
@@ -31,6 +30,7 @@ type ConfigManager struct {
 	nextSubID   int64
 	fileWatcher *watcher.FileWatcher
 	envWatcher  *watcher.EnvWatcher
+	mu          stdsync.RWMutex // 互斥锁，保护共享资源
 }
 
 // NewConfigManager 创建配置管理器
@@ -76,7 +76,9 @@ func (cm *ConfigManager) Init() error {
 		return fmt.Errorf("failed to sync config to env: %w", err)
 	}
 
+	cm.mu.Lock()
 	cm.currentCfg = cfg
+	cm.mu.Unlock()
 
 	// 启动配置监听器
 	if err := cm.startWatchers(); err != nil {
@@ -94,7 +96,7 @@ func (cm *ConfigManager) startWatchers() error {
 		cm.handleConfigChange(cfg, model.ConfigSourceFile)
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create file watcher: %w", err)
 	}
 	cm.fileWatcher = fileWatcher
 	fileWatcher.Start()
@@ -121,15 +123,17 @@ func (cm *ConfigManager) handleConfigChange(cfg *model.Config, source model.Conf
 	}
 
 	// 更新当前配置
+	cm.mu.Lock()
 	oldCfg := cm.currentCfg
 	cm.currentCfg = cfg
+	cm.mu.Unlock()
 
 	// 通知所有订阅者
 	cm.notifySubscribers(oldCfg)
 }
 
 // handleEnvChange 处理环境变量变化
-func (cm *ConfigManager) handleEnvChange(envMap map[string]string) {
+func (cm *ConfigManager) handleEnvChange(_ map[string]string) {
 	// 重新加载配置，环境变量会自动覆盖配置文件
 	cfg, _, err := loader.LoadConfig(cm.configPath)
 	if err != nil {
@@ -141,26 +145,39 @@ func (cm *ConfigManager) handleEnvChange(envMap map[string]string) {
 }
 
 // notifySubscribers 通知所有订阅者配置变更
-func (cm *ConfigManager) notifySubscribers(oldCfg *model.Config) {
+func (cm *ConfigManager) notifySubscribers(_ *model.Config) {
 	// 创建配置变更事件
 	event := &config.ConfigChangeEvent{
 		Version:   "v1.0.0",
 		Timestamp: time.Now().Format(time.RFC3339),
+		Key:       "config.updated",
 	}
 
 	// 遍历所有订阅者
-	for subID, stream := range cm.subscribers {
+	cm.mu.RLock()
+	subscribersCopy := make(map[int64]config.ConfigService_WatchConfigServer, len(cm.subscribers))
+	for k, v := range cm.subscribers {
+		subscribersCopy[k] = v
+	}
+	cm.mu.RUnlock()
+
+	for subID, stream := range subscribersCopy {
 		if err := stream.Send(event); err != nil {
 			log.Printf("Failed to send config change event to subscriber %d: %v", subID, err)
 			// 移除无效的订阅者
+			cm.mu.Lock()
 			delete(cm.subscribers, subID)
+			cm.mu.Unlock()
 		}
 	}
 }
 
 // GetConfig 获取配置
 func (cm *ConfigManager) GetConfig(ctx context.Context, req *config.GetConfigRequest) (*config.GetConfigResponse, error) {
+	cm.mu.RLock()
 	cfg := cm.currentCfg
+	cm.mu.RUnlock()
+
 	configs := make(map[string]*config.ConfigItem)
 
 	// 将模型转换为gRPC响应格式
@@ -517,14 +534,18 @@ func (cm *ConfigManager) WatchConfig(req *config.WatchConfigRequest, stream conf
 	cm.nextSubID++
 
 	// 添加订阅者
+	cm.mu.Lock()
 	cm.subscribers[subID] = stream
+	cm.mu.Unlock()
 	log.Printf("New subscriber: %d", subID)
 
 	// 保持连接，直到客户端断开
 	<-stream.Context().Done()
 
 	// 移除订阅者
+	cm.mu.Lock()
 	delete(cm.subscribers, subID)
+	cm.mu.Unlock()
 	log.Printf("Subscriber disconnected: %d", subID)
 
 	return nil
@@ -558,7 +579,11 @@ func (cm *ConfigManager) StartService(ctx context.Context, req *config.StartServ
 	log.Printf("Received StartService request: %v", req)
 
 	// 检查服务是否已经激活
-	if cm.isActive {
+	cm.mu.RLock()
+	isActive := cm.isActive
+	cm.mu.RUnlock()
+
+	if isActive {
 		log.Println("ConfigService is already active")
 		return &config.StartServiceResponse{
 			Success: true,
@@ -578,7 +603,9 @@ func (cm *ConfigManager) StartService(ctx context.Context, req *config.StartServ
 	}
 
 	// 设置服务为激活状态
+	cm.mu.Lock()
 	cm.isActive = true
+	cm.mu.Unlock()
 
 	log.Println("ConfigService has been activated successfully")
 
@@ -598,8 +625,18 @@ func (cm *ConfigManager) Check(ctx context.Context, req *common.HealthCheckReque
 
 // Watch 健康检查监听
 func (cm *ConfigManager) Watch(req *common.HealthCheckRequest, stream common.HealthCheckService_WatchServer) error {
-	// 简单实现，返回服务状态后断开连接
-	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
+	// 发送初始状态
+	initialStatus := &common.HealthCheckResponse{
+		Status: common.HealthCheckResponse_SERVING,
+	}
+	if err := stream.Send(initialStatus); err != nil {
+		return err
+	}
+
+	// 保持连接，直到客户端断开
+	<-stream.Context().Done()
+
+	return nil
 }
 
 // UpdateConfig 更新配置（内部使用）
@@ -619,10 +656,11 @@ func (cm *ConfigManager) Shutdown() {
 	}
 
 	// 关闭所有订阅者连接
-	for subID, stream := range cm.subscribers {
-		stream.Context().Done()
+	cm.mu.Lock()
+	for subID := range cm.subscribers {
 		delete(cm.subscribers, subID)
 	}
+	cm.mu.Unlock()
 
 	log.Println("ConfigManager shutdown successfully")
 }

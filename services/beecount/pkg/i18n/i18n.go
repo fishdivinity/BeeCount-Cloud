@@ -122,11 +122,9 @@ func (i *I18n) T(key string) string {
 		}
 	}
 
-	// 尝试获取默认语言的翻译
-	if trans, ok := i.translations["en-US"]; ok {
-		if value, ok := trans[key]; ok {
-			return value
-		}
+	// 尝试获取代码中的默认英文翻译
+	if value, ok := defaultEnTranslations[key]; ok {
+		return value
 	}
 
 	// 都没有找到，返回原始键

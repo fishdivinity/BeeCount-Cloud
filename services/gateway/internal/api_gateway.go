@@ -9,6 +9,7 @@ import (
 	configpb "github.com/fishdivinity/BeeCount-Cloud/common/proto/config"
 	"github.com/fishdivinity/BeeCount-Cloud/common/proto/log"
 	"github.com/fishdivinity/BeeCount-Cloud/common/proto/storage"
+	"github.com/fishdivinity/BeeCount-Cloud/common/transport"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -25,6 +26,9 @@ type GRPCClientConfig struct {
 
 // APIGateway API网关实现
 type APIGateway struct {
+	// 通信抽象层
+	Transport transport.Transport
+
 	// gRPC客户端
 	authClient     auth.AuthServiceClient
 	businessClient business.BusinessServiceClient
@@ -42,18 +46,15 @@ type APIGateway struct {
 
 // NewAPIGateway 创建API网关实例
 func NewAPIGateway() *APIGateway {
-	return &APIGateway{}
+	return &APIGateway{
+		Transport: transport.NewTransportWithFallback(),
+	}
 }
 
 // ConfigureGRPCClients 配置gRPC客户端
 func (g *APIGateway) ConfigureGRPCClients(grpcConfig GRPCClientConfig) error {
-	// 创建gRPC连接选项
-	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	}
-
 	// 连接认证服务
-	authConn, err := grpc.Dial(grpcConfig.AuthServiceAddr, opts...)
+	authConn, err := g.dialGRPC(grpcConfig.AuthServiceAddr)
 	if err != nil {
 		return err
 	}
@@ -61,7 +62,7 @@ func (g *APIGateway) ConfigureGRPCClients(grpcConfig GRPCClientConfig) error {
 	g.authClient = auth.NewAuthServiceClient(authConn)
 
 	// 连接业务服务
-	businessConn, err := grpc.Dial(grpcConfig.BusinessServiceAddr, opts...)
+	businessConn, err := g.dialGRPC(grpcConfig.BusinessServiceAddr)
 	if err != nil {
 		return err
 	}
@@ -69,7 +70,7 @@ func (g *APIGateway) ConfigureGRPCClients(grpcConfig GRPCClientConfig) error {
 	g.businessClient = business.NewBusinessServiceClient(businessConn)
 
 	// 连接存储服务
-	storageConn, err := grpc.Dial(grpcConfig.StorageServiceAddr, opts...)
+	storageConn, err := g.dialGRPC(grpcConfig.StorageServiceAddr)
 	if err != nil {
 		return err
 	}
@@ -77,7 +78,7 @@ func (g *APIGateway) ConfigureGRPCClients(grpcConfig GRPCClientConfig) error {
 	g.storageClient = storage.NewStorageServiceClient(storageConn)
 
 	// 连接配置服务
-	configConn, err := grpc.Dial(grpcConfig.ConfigServiceAddr, opts...)
+	configConn, err := g.dialGRPC(grpcConfig.ConfigServiceAddr)
 	if err != nil {
 		return err
 	}
@@ -85,7 +86,7 @@ func (g *APIGateway) ConfigureGRPCClients(grpcConfig GRPCClientConfig) error {
 	g.configClient = configpb.NewConfigServiceClient(configConn)
 
 	// 连接日志服务
-	logConn, err := grpc.Dial(grpcConfig.LogServiceAddr, opts...)
+	logConn, err := g.dialGRPC(grpcConfig.LogServiceAddr)
 	if err != nil {
 		return err
 	}
@@ -93,6 +94,23 @@ func (g *APIGateway) ConfigureGRPCClients(grpcConfig GRPCClientConfig) error {
 	g.logClient = log.NewLogServiceClient(logConn)
 
 	return nil
+}
+
+// dialGRPC 连接gRPC服务，使用通信抽象层
+func (g *APIGateway) dialGRPC(addr string) (*grpc.ClientConn, error) {
+	// 创建gRPC连接选项
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	}
+
+	// 检查地址是否有效
+	if g.Transport.ValidateAddress(addr) {
+		// 使用通信抽象层的连接方式
+		return grpc.Dial(addr, opts...)
+	}
+
+	// 如果地址无效，使用默认的连接方式
+	return grpc.Dial(addr, opts...)
 }
 
 // SetupRoutes 设置路由

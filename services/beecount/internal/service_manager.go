@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/fishdivinity/BeeCount-Cloud/common/proto/common"
+	"github.com/fishdivinity/BeeCount-Cloud/common/transport"
 	"github.com/fishdivinity/BeeCount-Cloud/services/beecount/pkg/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -18,27 +19,30 @@ import (
 
 // Service 服务定义
 type Service struct {
-	Name    string
-	Path    string
-	Port    int
-	Cmd     *exec.Cmd
-	Started bool
-	PidFile string
-	LogFile string
-	Mutex   sync.Mutex
+	Name       string
+	Path       string
+	Port       int
+	SocketPath string
+	Cmd        *exec.Cmd
+	Started    bool
+	PidFile    string
+	LogFile    string
+	Mutex      sync.Mutex
 }
 
 // ServiceManager 服务管理器
 type ServiceManager struct {
-	Services map[string]*Service
-	Mutex    sync.Mutex
+	Services  map[string]*Service
+	Transport transport.Transport
+	Mutex     sync.Mutex
 }
 
 // NewServiceManager 创建服务管理器实例
 func NewServiceManager() *ServiceManager {
 	return &ServiceManager{
-		Services: make(map[string]*Service),
-		Mutex:    sync.Mutex{},
+		Services:  make(map[string]*Service),
+		Transport: transport.NewTransportWithFallback(),
+		Mutex:     sync.Mutex{},
 	}
 }
 
@@ -124,15 +128,20 @@ func (sm *ServiceManager) InitServices() {
 		case "gateway":
 			port = 50057
 		}
+
+		// 使用通信抽象层生成服务地址
+		socketPath := sm.Transport.DefaultAddress(service)
+
 		servicePath := filepath.Join(rootDir, "services", service, "cmd")
 		sm.Services[service] = &Service{
-			Name:    service,
-			Path:    servicePath,
-			Port:    port,
-			Started: false,
-			PidFile: filepath.Join(pidsDir, service+".pid"),
-			LogFile: filepath.Join(logsDir, service+".log"),
-			Mutex:   sync.Mutex{},
+			Name:       service,
+			Path:       servicePath,
+			Port:       port,
+			SocketPath: socketPath,
+			Started:    false,
+			PidFile:    filepath.Join(pidsDir, service+".pid"),
+			LogFile:    filepath.Join(logsDir, service+".log"),
+			Mutex:      sync.Mutex{},
 		}
 	}
 }
@@ -193,8 +202,8 @@ func (sm *ServiceManager) startServiceExecutable(serviceName string, background 
 	// 使用服务管理器初始化时设置的服务路径
 	servicePath := service.Path
 
-	// 启动服务
-	cmd := exec.Command("go", "run", ".")
+	// 启动服务，先尝试使用 Unix 域套接字
+	cmd := exec.Command("go", "run", ".", "--socket", service.SocketPath)
 	cmd.Dir = servicePath
 
 	if background {
@@ -395,12 +404,35 @@ func (sm *ServiceManager) CheckServiceHealth(serviceName string) bool {
 
 	// 如果内存中状态为运行中，通过gRPC检查真实状态
 	if service, exists := sm.Services[serviceName]; exists {
-		// 创建gRPC客户端
-		addr := fmt.Sprintf(":%d", service.Port)
-		conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			logger.Debug("Failed to create gRPC client for service %s: %v", serviceName, err)
-			return false
+		// 使用通信抽象层创建gRPC客户端连接
+		var conn *grpc.ClientConn
+		var err error
+
+		// 优先使用通信抽象层生成的地址
+		addr := service.SocketPath
+
+		// 根据地址类型选择不同的连接方式
+		if sm.Transport.ValidateAddress(addr) {
+			// 尝试使用通信抽象层的连接方式
+			conn, err = grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+			if err != nil {
+				logger.Debug("Failed to create gRPC client for service %s: %v", serviceName, err)
+				// 如果失败，尝试使用网络端口
+				addr := fmt.Sprintf(":%d", service.Port)
+				conn, err = grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+				if err != nil {
+					logger.Debug("Failed to create TCP gRPC client for service %s: %v", serviceName, err)
+					return false
+				}
+			}
+		} else {
+			// 使用网络端口作为备选
+			addr := fmt.Sprintf(":%d", service.Port)
+			conn, err = grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+			if err != nil {
+				logger.Debug("Failed to create TCP gRPC client for service %s: %v", serviceName, err)
+				return false
+			}
 		}
 		defer conn.Close()
 

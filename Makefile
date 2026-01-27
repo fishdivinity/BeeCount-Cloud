@@ -66,9 +66,9 @@ clean:
 start: build
 	@echo "Starting all services..."
 	@if [ -f "$(BIN_DIR)/BeeCount-Cloud.exe" ]; then \
-		$(BIN_DIR)/BeeCount-Cloud.exe --all; \
+		"$(BIN_DIR)/BeeCount-Cloud.exe" start --all; \
 	else \
-		$(BIN_DIR)/BeeCount-Cloud --all; \
+		"$(BIN_DIR)/BeeCount-Cloud" start --all; \
 	fi
 
 # 停止所有服务

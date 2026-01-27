@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 	"time"
 
@@ -15,17 +17,30 @@ import (
 )
 
 func main() {
+	// 解析命令行参数
+	_ = flag.String("socket", "", "Unix domain socket path")
+	flag.Parse()
+
 	// 初始化API网关
 	gateway := internal.NewAPIGateway()
 
-	// 配置gRPC客户端
-	if err := gateway.ConfigureGRPCClients(internal.GRPCClientConfig{
+	// 配置gRPC客户端，优先使用 Unix 域套接字
+	grpcConfig := internal.GRPCClientConfig{
 		AuthServiceAddr:     "localhost:50053",
 		BusinessServiceAddr: "localhost:50054",
 		StorageServiceAddr:  "localhost:50055",
 		ConfigServiceAddr:   "localhost:50051",
 		LogServiceAddr:      "localhost:50052",
-	}); err != nil {
+	}
+
+	// 使用默认的 Unix 域套接字路径
+	grpcConfig.AuthServiceAddr = getSocketPath("auth")
+	grpcConfig.BusinessServiceAddr = getSocketPath("business")
+	grpcConfig.StorageServiceAddr = getSocketPath("storage")
+	grpcConfig.ConfigServiceAddr = getSocketPath("config")
+	grpcConfig.LogServiceAddr = getSocketPath("log")
+
+	if err := gateway.ConfigureGRPCClients(grpcConfig); err != nil {
 		log.Fatalf("Failed to configure gRPC clients: %v", err)
 	}
 
@@ -66,4 +81,13 @@ func main() {
 	}
 
 	log.Println("API Gateway exited")
+}
+
+// getSocketPath 生成跨平台的 Unix 域套接字路径
+func getSocketPath(serviceName string) string {
+	if runtime.GOOS == "windows" {
+		return fmt.Sprintf("\\\\.\\pipe\\beecount_%s", serviceName)
+	} else {
+		return fmt.Sprintf("/tmp/beecount_%s.sock", serviceName)
+	}
 }
