@@ -1,0 +1,30 @@
+package watcher
+
+// ConfigEnvVars 配置相关的环境变量列表
+// 集中管理所有需要监控的环境变量
+var ConfigEnvVars = []string{
+	"CONFIG_PATH",
+	"DATABASE_TYPE",
+	"STORAGE_TYPE",
+	"ADMIN_PASSWORD",
+	"SERVER_PORT",
+	"SERVER_MODE",
+	"DB_HOST",
+	"DB_PORT",
+	"DB_USER",
+	"DB_PASSWORD",
+	"DB_NAME",
+	"S3_ACCESS_KEY",
+	"S3_SECRET_KEY",
+	"S3_BUCKET",
+	"S3_REGION",
+	"S3_ENDPOINT",
+	"JWT_SECRET",
+	"JWT_EXPIRE_HOURS",
+	"LOG_LEVEL",
+	"LOG_FORMAT",
+	"LOG_OUTPUT",
+	"CORS_ALLOWED_ORIGINS",
+	"CORS_ALLOWED_METHODS",
+	"CORS_ALLOWED_HEADERS",
+}

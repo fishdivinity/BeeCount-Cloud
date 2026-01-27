@@ -1,0 +1,11 @@
+# 日志配置
+level: info
+format: json
+output: stdout
+file:
+  path: ./logs/app.log
+  max_size: 10
+  max_backups: 100
+  max_age: 28
+  compress: true
+  max_total_size_gb: 1

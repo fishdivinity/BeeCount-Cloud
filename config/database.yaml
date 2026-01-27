@@ -1,0 +1,13 @@
+# 数据库配置
+active: sqlite
+
+# SQLite配置
+sqlite:
+  path: ./data/beecount.db
+
+# 连接池配置
+pool:
+  max_idle_conns: 10
+  max_open_conns: 100
+  conn_max_lifetime: 1h
+  conn_max_idle_time: 30m

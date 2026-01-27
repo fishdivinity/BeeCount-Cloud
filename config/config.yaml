@@ -1,0 +1,223 @@
+# BeeCount Cloud Configuration File
+# This file contains all configuration options for the BeeCount Cloud service
+
+# Server Configuration
+server:
+  port: 8080              # Server listening port
+  mode: release           # Running mode: debug, release, test
+  read_timeout: 1m0s       # Read timeout
+  write_timeout: 1m0s      # Write timeout
+  docs:
+    enabled: false        # Whether to enable API documentation
+  admin_account:
+    username: beecount    # Admin username
+    password: beecount_admin_2026 # Admin password (please change after first use)
+
+# Database Configuration
+# Supported database types: sqlite, mysql, postgres
+# You can configure multiple databases, but only one can be active
+# Specify the active database type via database.active
+# Example: active: sqlite or active: mysql or active: postgres
+# To ensure configuration takes effect, make sure the active field matches the database type you want to use
+# Example: if you want to use mysql, set active: mysql
+# and ensure the mysql configuration section is correct
+# Similarly, if you want to use postgres, set active: postgres
+# and ensure the postgres configuration section is correct
+# sqlite is the default database type, no additional installation required
+# If you use mysql or postgres, ensure the database service is running
+# and the corresponding database and user have been created
+# Example: mysql requires creating a beecount database
+# postgres requires creating a beecount database
+# and ensure the user has appropriate permissions
+# Example: mysql user needs all permissions on the beecount database
+# postgres user needs all permissions on the beecount database
+# Note: If you are using a cloud database, ensure remote connections are allowed
+# Example: Alibaba Cloud RDS requires whitelist settings
+# Tencent Cloud CDB requires security group settings
+# AWS RDS requires security group and VPC settings
+# etc.
+# Please adjust the database configuration according to your actual situation
+# Database configuration examples:
+# 1. SQLite (default)
+# database:
+#   active: sqlite
+#   sqlite:
+#     path: ./data/beecount.db
+# 2. MySQL
+# database:
+#   active: mysql
+#   mysql:
+#     host: localhost
+#     port: 3306
+#     username: root
+#     password: password
+#     database: beecount
+#     charset: utf8mb4
+#     parse_time: true
+#     loc: Local
+# 3. PostgreSQL
+# database:
+#   active: postgres
+#   postgres:
+#     host: localhost
+#     port: 5432
+#     username: postgres
+#     password: password
+#     database: beecount
+#     sslmode: disable
+#     timezone: UTC
+
+# Database Configuration
+database:
+  active: sqlite # sqlite, mysql, postgres
+  sqlite:
+    path: ./data/beecount.db # SQLite database file path
+  mysql:
+    host: localhost # MySQL host address
+    port: 3306 # MySQL port
+    username: root # MySQL username
+    password: password # MySQL password
+    database: beecount # MySQL database name
+    charset: utf8mb4 # MySQL charset
+    parse_time: true # Whether to parse time
+    loc: Local # Timezone
+  postgres:
+    host: localhost # PostgreSQL host address
+    port: 5432 # PostgreSQL port
+    username: postgres # PostgreSQL username
+    password: password # PostgreSQL password
+    database: beecount # PostgreSQL database name
+    sslmode: disable # SSL mode
+    timezone: UTC # Timezone
+  pool:
+    max_idle_conns: 10 # Maximum number of idle connections
+    max_open_conns: 100 # Maximum number of open connections
+    conn_max_lifetime: 1h0m0s # Maximum connection lifetime
+    conn_max_idle_time: 30m0s # Maximum idle connection time
+
+# Storage Configuration
+# Supported storage types: local, s3
+# local: Local file storage
+# s3: S3-compatible storage (including AWS S3, Alibaba Cloud OSS, Tencent Cloud COS, MinIO, etc.)
+# max_file_size: Maximum upload file size (bytes)
+# allowed_file_types: Allowed upload file types
+# local configuration section:
+# path: Local storage path
+# url_prefix: Access prefix
+# s3 configuration section:
+# region: S3 region
+# bucket: S3 bucket name
+# access_key_id: S3 access key ID
+# secret_access_key: S3 secret access key
+# endpoint: S3 endpoint (if using cloud storage, fill in the corresponding endpoint)
+# Example: Alibaba Cloud OSS endpoint is oss-cn-hangzhou.aliyuncs.com
+# Tencent Cloud COS endpoint is cos.ap-guangzhou.myqcloud.com
+# MinIO endpoint is minio.example.com:9000
+# Note: If using S3-compatible storage, ensure the endpoint is configured correctly
+# and the access_key_id and secret_access_key have appropriate permissions
+# Example: upload, download, delete files, etc.
+storage:
+  active: local # Active storage type: local, s3
+  max_file_size: 5242880 # Maximum upload file size (5MB)
+  allowed_file_types: # Allowed upload file types
+    - image/jpeg
+    - image/png
+    - image/gif
+    - image/webp
+  local: # Local storage configuration
+    path: ./data/uploads # Local storage path
+    url_prefix: /uploads # Access prefix
+  s3: # S3 storage configuration
+    region: us-east-1 # S3 region
+    bucket: beecount-uploads # S3 bucket name
+    access_key_id: your-access-key # S3 access key ID
+    secret_access_key: your-secret-key # S3 secret access key
+    endpoint: https://s3.amazonaws.com # S3 endpoint
+
+# JWT Configuration
+# JWT (JSON Web Token) is used for user authentication
+# This configuration includes JWT secret, expiration time, rotation interval, etc.
+# On first start, secret will be automatically generated with a random key
+# Secret rotation functionality periodically generates new keys and keeps old keys for a period
+# to ensure currently used JWT tokens do not expire immediately
+# Example: rotation_interval_days: 7 means generate a new key every 7 days
+# last_rotation_date records the date when the new key was last generated
+# previous_secret stores the old key for compatibility with currently used JWT tokens
+# expire_hours indicates the validity period of JWT tokens
+# Example: expire_hours: 24 means tokens are valid for 24 hours
+# Note: Please ensure the security of the secret, do not leak it to others
+# If the secret is leaked, user authentication may be bypassed
+# It is recommended to change the secret regularly or enable secret rotation
+jwt:
+  secret: b9bcf0a307981db964c37ca5b4419538bcc7061a3a1ac2a086358e80219fabf8 # JWT secret, automatically generated on first start
+  expire_hours: 24 # JWT expiration time (hours)
+  rotation_interval_days: 7 # Secret rotation interval (days)
+  last_rotation_date: "" # Last secret rotation date
+  previous_secret: "" # Old secret for compatibility with currently used JWT tokens
+
+# Cache Configuration
+# Supported cache types: memory, redis
+# memory: In-memory cache, suitable for single-instance deployment
+# redis: Redis cache, suitable for distributed deployment
+# When Redis is unavailable, it will automatically degrade to memory cache
+cache:
+  active: memory # Cache type: memory or redis
+  memory:
+    max_size: 10000 # Maximum number of entries in memory cache
+  redis:
+    host: localhost # Redis host
+    port: 6379 # Redis port
+    password: "" # Redis password
+    db: 0 # Redis database
+
+# Log Configuration
+# Log levels: debug, info, warn, error
+# Log formats: json, console
+# Log outputs: stdout, file
+# If output is file, you need to configure the file section
+# file configuration section:
+# path: Log file path
+# max_size: Maximum size of a single log file (MB)
+# max_backups: Number of log files to keep
+# max_age: Log file retention time (days)
+# compress: Whether to compress log files
+# max_total_size_gb: Maximum total size of log files (GB)
+# Example: max_total_size_gb: 10 means log files total size does not exceed 10GB
+# If exceeded, the oldest log files will be automatically deleted
+log:
+  level: warn # Log level
+  format: console # Log format
+  output: file # Log output
+  file: # File output configuration
+    path: ./logs/app.log # Log file path
+    max_size: 10 # Maximum size of a single log file (MB)
+    max_backups: 100 # Number of log files to keep
+    max_age: 28 # Log file retention time (days)
+    compress: true # Whether to compress log files
+    max_total_size_gb: 1 # Maximum total size of log files (GB)
+
+# CORS Configuration
+# CORS (Cross-Origin Resource Sharing)
+# Allows requests from different domains to access the API
+# allowed_origins: Allowed origins
+# Example: ["*"] means allow all origins
+# allowed_methods: Allowed HTTP methods
+# allowed_headers: Allowed HTTP headers
+# exposed_headers: HTTP headers exposed to clients
+# allow_credentials: Whether to allow credentials
+# max_age: Cache time for preflight requests
+cors:
+  allowed_origins:
+    - "*"
+  allowed_methods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  allowed_headers:
+    - "*"
+  exposed_headers:
+    - Content-Length
+  allow_credentials: true # Allow credentials
+  max_age: 12h # Preflight request cache time

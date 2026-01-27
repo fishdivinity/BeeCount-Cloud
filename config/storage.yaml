@@ -1,0 +1,13 @@
+# 存储配置
+active: local
+max_file_size: 5242880
+allowed_file_types:
+  - image/jpeg
+  - image/png
+  - image/gif
+  - image/webp
+
+# 本地存储配置
+local:
+  path: ./data/uploads
+  url_prefix: /uploads

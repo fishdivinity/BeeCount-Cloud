@@ -1,0 +1,42 @@
+# BeeCount Cloud .gitignore
+
+# Build outputs
+build/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Logs
+logs/
+*.log
+
+# Configuration
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+.trae/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Old project directory (to be removed after refactoring)
+old_project/

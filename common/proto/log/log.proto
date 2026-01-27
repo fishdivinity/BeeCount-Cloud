@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package log;
+
+option go_package = "github.com/fishdivinity/BeeCount-Cloud/common/proto/log";
+
+// 导入 common 包
+import "common/common.proto";
+
+// 日志级别
+enum LogLevel {
+  DEBUG = 0;
+  INFO = 1;
+  WARNING = 2;
+  ERROR = 3;
+  FATAL = 4;
+}
+
+// 日志条目
+message LogEntry {
+  LogLevel level = 1;
+  string service_name = 2;
+  string message = 3;
+  map<string, string> fields = 4;
+  string timestamp = 5;
+  string trace_id = 6;
+}
+
+// 日志请求
+message LogRequest {
+  LogEntry entry = 1;
+}
+
+// 设置日志级别请求
+message SetLogLevelRequest {
+  LogLevel level = 1;
+  string service_name = 2;
+}
+
+// 日志服务接口
+service LogService {
+  // 记录日志
+  rpc Log(LogRequest) returns (common.Response);
+  // 设置日志级别
+  rpc SetLogLevel(SetLogLevelRequest) returns (common.Response);
+}

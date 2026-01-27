@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "github.com/fishdivinity/BeeCount-Cloud/common/proto/auth";
+
+// 导入 common 包
+import "common/common.proto";
+
+// JWT生成请求
+message GenerateTokenRequest {
+  string user_id = 1;
+  string username = 2;
+  map<string, string> claims = 3;
+  int32 expire_hours = 4;
+}
+
+// JWT生成响应
+message GenerateTokenResponse {
+  string token = 1;
+  string refresh_token = 2;
+  int64 expire_at = 3;
+}
+
+// JWT验证请求
+message ValidateTokenRequest {
+  string token = 1;
+}
+
+// JWT验证响应
+message ValidateTokenResponse {
+  bool valid = 1;
+  string user_id = 2;
+  string username = 3;
+  map<string, string> claims = 4;
+  int64 expire_at = 5;
+}
+
+// IP封禁请求
+message BanIPRequest {
+  string ip = 1;
+  int32 duration_seconds = 2;
+  string reason = 3;
+}
+
+// IP解封请求
+message UnbanIPRequest {
+  string ip = 1;
+}
+
+// IP检查请求
+message CheckIPRequest {
+  string ip = 1;
+}
+
+// IP检查响应
+message CheckIPResponse {
+  bool is_banned = 1;
+  string reason = 2;
+  int64 ban_expire_at = 3;
+}
+
+// 认证服务接口
+service AuthService {
+  // 生成JWT令牌
+  rpc GenerateToken(GenerateTokenRequest) returns (GenerateTokenResponse);
+  // 验证JWT令牌
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+  // 封禁IP
+  rpc BanIP(BanIPRequest) returns (common.Response);
+  // 解封IP
+  rpc UnbanIP(UnbanIPRequest) returns (common.Response);
+  // 检查IP是否被封禁
+  rpc CheckIP(CheckIPRequest) returns (CheckIPResponse);
+}

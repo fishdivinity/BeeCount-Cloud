@@ -1,0 +1,15 @@
+# CORS配置
+allowed_origins:
+  - "*"
+allowed_methods:
+  - GET
+  - POST
+  - PUT
+  - DELETE
+  - OPTIONS
+allowed_headers:
+  - "*"
+exposed_headers:
+  - Content-Length
+allow_credentials: true
+max_age: 12h

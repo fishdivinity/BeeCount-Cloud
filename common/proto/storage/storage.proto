@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package storage;
+
+option go_package = "github.com/fishdivinity/BeeCount-Cloud/common/proto/storage";
+
+// 导入 common 包
+import "common/common.proto";
+
+// 文件信息
+message FileInfo {
+  string id = 1;
+  string filename = 2;
+  string content_type = 3;
+  int64 size = 4;
+  string user_id = 5;
+  string storage_path = 6;
+  string created_at = 7;
+  map<string, string> metadata = 8;
+}
+
+// 上传文件请求
+message UploadFileRequest {
+  string user_id = 1;
+  string filename = 2;
+  string content_type = 3;
+  bytes chunk = 4;
+  bool is_last_chunk = 5;
+  map<string, string> metadata = 6;
+}
+
+// 上传文件响应
+message UploadFileResponse {
+  FileInfo file_info = 1;
+  int64 uploaded_bytes = 2;
+  bool completed = 3;
+}
+
+// 下载文件请求
+message DownloadFileRequest {
+  string file_id = 1;
+  string user_id = 2;
+}
+
+// 下载文件响应
+message DownloadFileResponse {
+  bytes chunk = 1;
+  bool is_last_chunk = 2;
+  FileInfo file_info = 3;
+}
+
+// 删除文件请求
+message DeleteFileRequest {
+  string file_id = 1;
+  string user_id = 2;
+}
+
+// 获取文件信息请求
+message GetFileInfoRequest {
+  string file_id = 1;
+  string user_id = 2;
+}
+
+// 存储服务接口
+service StorageService {
+  // 上传文件（支持流式上传）
+  rpc UploadFile(stream UploadFileRequest) returns (UploadFileResponse);
+  // 下载文件（支持流式下载）
+  rpc DownloadFile(DownloadFileRequest) returns (stream DownloadFileResponse);
+  // 删除文件
+  rpc DeleteFile(DeleteFileRequest) returns (common.Response);
+  // 获取文件信息
+  rpc GetFileInfo(GetFileInfoRequest) returns (FileInfo);
+}

@@ -1,0 +1,10 @@
+# 服务器配置
+port: 8080
+mode: debug
+read_timeout: 60s
+write_timeout: 60s
+docs:
+  enabled: true
+admin_account:
+  username: beecount
+  password: beecount_admin_2026

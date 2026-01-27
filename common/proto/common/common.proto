@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package common;
+
+option go_package = "github.com/fishdivinity/BeeCount-Cloud/common/proto/common";
+
+// 通用响应消息
+message Response {
+  bool success = 1;
+  string message = 2;
+  int32 code = 3;
+}
+
+// 状态响应
+message StatusResponse {
+  bool healthy = 1;
+  string service_name = 2;
+  string version = 3;
+  map<string, string> metadata = 4;
+}
+
+// 健康检查请求
+message HealthCheckRequest {
+  string service = 1;
+}
+
+// 健康检查响应
+message HealthCheckResponse {
+  enum ServingStatus {
+    UNKNOWN = 0;
+    SERVING = 1;
+    NOT_SERVING = 2;
+    SERVICE_UNKNOWN = 3;
+  }
+  ServingStatus status = 1;
+}
+
+// 通用健康检查服务
+service HealthCheckService {
+  rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
+  rpc Watch(HealthCheckRequest) returns (stream HealthCheckResponse);
+}

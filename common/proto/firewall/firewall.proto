@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package firewall;
+
+option go_package = "github.com/fishdivinity/BeeCount-Cloud/common/proto/firewall";
+
+// 导入 common 包
+import "common/common.proto";
+
+// 防火墙规则请求
+message FirewallRule {
+  string ip = 1;
+  string action = 2; // allow or deny
+}
+
+// 访问检查请求
+message CheckAccessRequest {
+  string ip = 1;
+  string service = 2;
+  string method = 3;
+}
+
+// 访问检查响应
+message CheckAccessResponse {
+  bool allowed = 1;
+  string action = 2;
+}
+
+// 删除规则请求
+message DeleteRuleRequest {
+  string ip = 1;
+}
+
+// 获取规则请求
+message GetRulesRequest {
+}
+
+// 获取规则响应
+message GetRulesResponse {
+  repeated FirewallRule rules = 1;
+  string default_action = 2;
+}
+
+// 防火墙服务接口
+service FirewallService {
+  // 检查访问权限
+  rpc CheckAccess(CheckAccessRequest) returns (CheckAccessResponse);
+  // 更新防火墙规则
+  rpc UpdateRule(FirewallRule) returns (common.Response);
+  // 删除防火墙规则
+  rpc DeleteRule(DeleteRuleRequest) returns (common.Response);
+  // 获取所有规则
+  rpc GetRules(GetRulesRequest) returns (GetRulesResponse);
+}

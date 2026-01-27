@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package beecount;
+
+option go_package = "github.com/fishdivinity/BeeCount-Cloud/common/proto/business";
+
+// 导入 common 包
+import "common/common.proto";
+
+// 账本消息
+message Ledger {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string user_id = 4;
+  string currency = 5;
+  string created_at = 6;
+  string updated_at = 7;
+}
+
+// 交易消息
+message Transaction {
+  string id = 1;
+  string ledger_id = 2;
+  string user_id = 3;
+  string type = 4; // income, expense, transfer
+  string category_id = 5;
+  string subcategory_id = 6;
+  string account_id = 7;
+  string target_account_id = 8;
+  string amount = 9; // 使用字符串避免精度问题
+  string description = 10;
+  string date = 11;
+  string created_at = 12;
+  string updated_at = 13;
+  map<string, string> tags = 14;
+}
+
+// 同步请求
+message SyncRequest {
+  string user_id = 1;
+  string device_id = 2;
+  int64 last_sync_time = 3;
+  repeated Transaction transactions = 4;
+  repeated Ledger ledgers = 5;
+}
+
+// 同步响应
+message SyncResponse {
+  int64 sync_time = 1;
+  repeated Transaction transactions = 2;
+  repeated Ledger ledgers = 3;
+  repeated string deleted_transaction_ids = 4;
+  repeated string deleted_ledger_ids = 5;
+}
+
+// 获取账本列表请求
+message GetLedgersRequest {
+  string user_id = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+// 获取账本列表响应
+message GetLedgersResponse {
+  repeated Ledger ledgers = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+// 业务服务接口
+service BusinessService {
+  // 同步数据
+  rpc Sync(SyncRequest) returns (SyncResponse);
+  // 获取账本列表
+  rpc GetLedgers(GetLedgersRequest) returns (GetLedgersResponse);
+  // 创建账本
+  rpc CreateLedger(Ledger) returns (Ledger);
+  // 更新账本
+  rpc UpdateLedger(Ledger) returns (Ledger);
+  // 删除账本
+  rpc DeleteLedger(Ledger) returns (common.Response);
+  // 创建交易
+  rpc CreateTransaction(Transaction) returns (Transaction);
+  // 更新交易
+  rpc UpdateTransaction(Transaction) returns (Transaction);
+  // 删除交易
+  rpc DeleteTransaction(Transaction) returns (common.Response);
+}
