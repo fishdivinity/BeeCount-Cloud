@@ -28,11 +28,11 @@ func NewTransport() Transport {
 func NewTransportWithFallback() Transport {
 	// 首先尝试使用平台首选的通信方式
 	primaryTransport := NewTransport()
-	
+
 	// 如果首选方式不可用，使用 TCP 作为备选
 	if primaryTransport == nil {
 		return NewTCPTransport()
 	}
-	
+
 	return primaryTransport
 }

@@ -17,11 +17,12 @@ func NewTCPTransport() Transport {
 // NewListener 创建 TCP 监听器
 func (t *TCPTransport) NewListener(address string) (Listener, error) {
 	// 创建 TCP 监听器
+	// 当端口为 0 时，net.Listen 会自动分配可用端口
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create tcp listener: %v", err)
 	}
-	
+
 	return listener, nil
 }
 
@@ -49,6 +50,9 @@ func (t *TCPTransport) DefaultAddress(serviceName string) string {
 		port = 50056
 	case "gateway":
 		port = 50057
+	case "":
+		// 未指定服务名时使用动态端口
+		return ":0"
 	}
 	return fmt.Sprintf(":%d", port)
 }
@@ -58,7 +62,7 @@ func (t *TCPTransport) ValidateAddress(address string) bool {
 	if address == "" {
 		return false
 	}
-	
+
 	// 检查地址格式是否为 :port
 	if address[0] == ':' {
 		portStr := address[1:]
@@ -68,7 +72,7 @@ func (t *TCPTransport) ValidateAddress(address string) bool {
 		}
 		return port > 0 && port < 65536
 	}
-	
+
 	// 检查地址格式是否为 host:port
 	_, err := net.ResolveTCPAddr("tcp", address)
 	return err == nil

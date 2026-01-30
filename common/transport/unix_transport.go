@@ -7,6 +7,22 @@ import (
 	"path/filepath"
 )
 
+// UnixListener 包装 net.Listener，实现自动清理套接字文件
+type UnixListener struct {
+	net.Listener
+	address string
+}
+
+// Close 关闭监听器并清理套接字文件
+func (l *UnixListener) Close() error {
+	err := l.Listener.Close()
+	// 清理套接字文件
+	if l.address != "" {
+		os.Remove(l.address)
+	}
+	return err
+}
+
 // UnixTransport Unix 域套接字通信实现
 type UnixTransport struct{}
 
@@ -40,7 +56,11 @@ func (t *UnixTransport) NewListener(address string) (Listener, error) {
 		return nil, fmt.Errorf("failed to create unix listener: %v", err)
 	}
 
-	return listener, nil
+	// 返回包装后的监听器，实现自动清理
+	return &UnixListener{
+		Listener: listener,
+		address:  address,
+	}, nil
 }
 
 // NewDialer 创建 Unix 域套接字拨号器
@@ -50,7 +70,7 @@ func (t *UnixTransport) NewDialer() Dialer {
 
 // DefaultAddress 获取默认 Unix 域套接字地址
 func (t *UnixTransport) DefaultAddress(serviceName string) string {
-	return fmt.Sprintf("/tmp/beecount_%s.sock", serviceName)
+	return fmt.Sprintf("/app/sockets/%s.sock", serviceName)
 }
 
 // ValidateAddress 检查 Unix 域套接字地址是否有效

@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"net"
 	"os"
@@ -21,13 +20,11 @@ func main() {
 	socketPath := flag.String("socket", "", "Unix domain socket path")
 	flag.Parse()
 
-	// 输出提示信息，说明服务不能直接使用
-	log.Println("ConfigService is running in standby mode.")
-	log.Println("Please use BeeCount-Cloud service to start ConfigService via gRPC.")
-	log.Println("Direct usage of this executable is not supported.")
-
 	// 配置文件路径
 	configPath := "d:/Work/code/BeeCount-Cloud/config/config.yaml"
+
+	// 输出启动信息
+	log.Println("Starting ConfigService...")
 
 	// 初始化配置管理器
 	configManager := configmgr.NewConfigManager(configPath)
@@ -57,14 +54,14 @@ func main() {
 		log.Printf("Failed to create listener: %v", err)
 		log.Printf("Falling back to TCP port...")
 		// 降级到使用网络端口
-		port := 50051
-		listener, err = net.Listen("tcp", fmt.Sprintf(":%d", port))
+		tcpAddr := ":50051" // 使用固定的TCP端口
+		listener, err = net.Listen("tcp", tcpAddr)
 		if err != nil {
 			log.Fatalf("Failed to listen: %v", err)
 		}
-		log.Printf("ConfigService standby server is running on port %d", port)
+		log.Printf("ConfigService is running on %s", tcpAddr)
 	} else {
-		log.Printf("ConfigService standby server is running on %s", address)
+		log.Printf("ConfigService is running on %s", address)
 	}
 
 	// 启动gRPC服务器

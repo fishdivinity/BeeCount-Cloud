@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/fishdivinity/BeeCount-Cloud/common/transport"
 	"github.com/fishdivinity/BeeCount-Cloud/services/gateway/internal"
 	"github.com/gin-gonic/gin"
 )
@@ -24,14 +25,11 @@ func main() {
 	// 初始化API网关
 	gateway := internal.NewAPIGateway()
 
+	// 创建通信抽象层实例
+	_ = transport.NewTransportWithFallback()
+
 	// 配置gRPC客户端，优先使用 Unix 域套接字
-	grpcConfig := internal.GRPCClientConfig{
-		AuthServiceAddr:     "localhost:50053",
-		BusinessServiceAddr: "localhost:50054",
-		StorageServiceAddr:  "localhost:50055",
-		ConfigServiceAddr:   "localhost:50051",
-		LogServiceAddr:      "localhost:50052",
-	}
+	grpcConfig := internal.GRPCClientConfig{}
 
 	// 使用默认的 Unix 域套接字路径
 	grpcConfig.AuthServiceAddr = getSocketPath("auth")

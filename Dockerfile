@@ -64,7 +64,7 @@ COPY --from=builder /app/web /app/web
 COPY --from=builder /app/services/beecount/i18n /app/i18n
 
 # 创建必要的目录
-RUN mkdir -p /app/config /app/data /app/logs
+RUN mkdir -p /app/config /app/data /app/logs /app/sockets
 
 # 暴露端口
 EXPOSE 8080
